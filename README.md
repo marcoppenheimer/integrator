@@ -64,3 +64,18 @@ juju run-action integrator/0 get-data
 
 juju show-action-output 2
 ```
+
+### Output
+
+```bash
+UnitId: integrator/0
+id: "14"
+results:
+  bootstrap-server: kafka-k8s-1.kafka-k8s-endpoints:9092,kafka-k8s-0.kafka-k8s-endpoints:9092,kafka-k8s-2.kafka-k8s-endpoints:9092
+  consumer-group-prefix: relation-11-
+  password: QxMg41nvfEtvcJkYqI51GVGCnwsf8nmQ
+  topic: demo
+  username: relation-11
+status: completed
+```
+
