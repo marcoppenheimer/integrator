@@ -1,0 +1,16 @@
+# Copyright 2022 Canonical Ltd.
+# See LICENSE file for licensing details.
+
+name: integrator 
+description: |
+  Toy integrator charm used as a proof of concept Apache Kafka charm.
+summary: |
+  Toy integrator charm used as a proof of concept Apache Kafka charm.
+
+peers:
+  cluster:
+    interface: cluster
+
+requires:
+  kafka-client:
+    interface: kafka_client
