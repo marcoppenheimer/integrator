@@ -1,11 +1,2 @@
-get-topic:
-  description: Returns the topic name created for the charm
-
-get-bootstrap-server:
-  description: Returns the bootstrap-server string for connecting to Kafka brokers
-
-get-username:
-  description: Returns the username string for connecting to Kafka brokers
-
-get-password:
-  description: Returns the password string for connecting to Kafka brokers
+get-data:
+  description: Returns the topic name, username, password, consumer-group-prefix and bootstrap-server created for the charm

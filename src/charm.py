@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Union
 
 from ops.charm import ActionEvent, CharmBase, RelationEvent
 from ops.main import main
+from ops.model import ActiveStatus
 
 logger = logging.getLogger(__name__)
 
@@ -29,10 +30,8 @@ class IntegratorCharm(CharmBase):
         self.name = CHARM_KEY
 
         self.framework.observe(self.on[REL_NAME].relation_created, self._set_data)
-        self.framework.observe(getattr(self.on, "get_topic_action"), self._get_topic)
-        self.framework.observe(
-            getattr(self.on, "get_bootstrap_server_action"), self._get_bootstrap_server
-        )
+        self.framework.observe(self.on[REL_NAME].relation_changed, self._set_data)
+        self.framework.observe(getattr(self.on, "get_data_action"), self._get_data)
 
     @property
     def relation(self):
@@ -48,70 +47,67 @@ class IntegratorCharm(CharmBase):
             return
 
         logger.info("Setting relation data to Kafka...")
+        username = event.relation.data[event.relation.app].get("username", "")
+        password = event.relation.data[event.relation.app].get("password", "")
+        bootstrap_server = event.relation.data[event.relation.app].get("uris", "")
+        consumer_group_prefix = event.relation.data[event.relation.app].get(
+            "consumer-group-prefix", ""
+        )
+
         event.relation.data[self.app].update(
             {"extra-user-roles": "admin,consumer,producer", "topic": TOPIC}
         )
 
-    def _get_topic(self, event: ActionEvent) -> None:
+        self.relation.data[self.app].update(
+            {
+                "username": username,
+                "password": password,
+                "bootstrap-server": bootstrap_server,
+                "consumer-group-prefix": consumer_group_prefix,
+                "topic": TOPIC,
+            }
+        )
+
+        self.unit.status = ActiveStatus()
+
+    def _get_data(self, event: ActionEvent) -> None:
         if not self.kafka_relation:
             event.fail("integrator not related to kafka")
             return
 
-        topic = self.kafka_relation.data[self.app].get("topic", "")
+        topic = self.relation.data[self.app].get("topic", "")
+        username = self.relation.data[self.app].get("username", "")
+        password = self.relation.data[self.app].get("password", "")
+        bootstrap_server = self.relation.data[self.app].get("bootstrap-server", "")
+        consumer_group_prefix = self.relation.data[self.app].get(
+            "consumer-group-prefix", ""
+        )
 
         if not topic:
             event.fail("Topic not found...")
             return
-
-        event.log("Topic found...")
-        event.set_results({"topic": topic})
-        return
-
-    def _get_bootstrap_server(self, event: ActionEvent) -> None:
-        if not self.kafka_relation or not self.kafka_relation.app:
-            event.fail("integrator not related to kafka")
-            return
-
-        bootstrap_server = self.kafka_relation.data[self.kafka_relation.app].get(
-            "uris", ""
-        )
-
-        if not bootstrap_server:
-            event.fail("Bootstrap-Server not found...")
-            return
-
-        event.log("Bootstrap-Server found...")
-        event.set_results({"bootstrap-server": bootstrap_server})
-        return
-
-    def _get_username(self, event: ActionEvent) -> None:
-        if not self.kafka_relation or not self.kafka_relation.app:
-            event.fail("integrator not related to kafka")
-            return
-
-        username = self.kafka_relation.data[self.kafka_relation.app].get("username", "")
-
         if not username:
             event.fail("Username not found...")
             return
-
-        event.log("Username found...")
-        event.set_results({"username": username})
-        return
-
-    def _get_password(self, event: ActionEvent) -> None:
-        if not self.kafka_relation or not self.kafka_relation.app:
-            event.fail("integrator not related to kafka")
-            return
-
-        password = self.kafka_relation.data[self.kafka_relation.app].get("password", "")
-
         if not password:
             event.fail("Password not found...")
             return
+        if not bootstrap_server:
+            event.fail("BootstrapServer not found...")
+            return
+        if not consumer_group_prefix:
+            event.fail("ConsumerGroupPrefix not found...")
+            return
 
-        event.log("Password found...")
-        event.set_results({"password": password})
+        event.set_results(
+            {
+                "username": username,
+                "password": password,
+                "bootstrap-server": bootstrap_server,
+                "consumer-group-prefix": consumer_group_prefix,
+                "topic": TOPIC,
+            }
+        )
         return
 
 
