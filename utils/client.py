@@ -3,7 +3,7 @@ import json
 import logging
 import sys
 import time
-from typing import List
+from typing import List, Optional
 
 import requests
 from kafka import KafkaAdminClient, KafkaConsumer, KafkaProducer
@@ -20,10 +20,10 @@ class KafkaClient:
     def __init__(
         self,
         servers: List[str],
-        username: str,
-        password: str,
+        username: Optional[str],
+        password: Optional[str],
         topic: str,
-        consumer_group_prefix: str,
+        consumer_group_prefix: Optional[str],
         security_protocol: str,
     ) -> None:
         self.servers = servers
@@ -68,7 +68,7 @@ class KafkaClient:
             ssl_certfile="certs/cert.pem" if self.ssl else None,
             ssl_keyfile="certs/key.pem" if self.mtls else None,
             api_version=KafkaClient.API_VERSION if self.mtls else None,
-            group_id=self.consumer_group_prefix + "1",
+            group_id=self.consumer_group_prefix + "1" if self.consumer_group_prefix else None,
             enable_auto_commit=True,
             auto_offset_reset="earliest",
             consumer_timeout_ms=15000,
@@ -155,7 +155,6 @@ if __name__ == "__main__":
         "--consumer-group-prefix",
         help="Kafka consumer-group-prefix provided by Kafka Charm",
         type=str,
-        default=None,
     )
     parser.add_argument(
         "-s",
@@ -177,7 +176,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     servers = args.servers.split(",")
     if not args.consumer_group_prefix:
-        args.consumer_group_prefix = f"{args.username}-"
+        args.consumer_group_prefix = f"{args.username}-" if args.username else None
 
     client = KafkaClient(
         servers=servers,
