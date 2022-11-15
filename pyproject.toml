@@ -1,21 +1,21 @@
 [tool.poetry]
-name = "producer"
+name = "integrator"
 version = "0.1.0"
-description = ""
-authors = ["Your Name <you@example.com>"]
+description = "Toy integrator charm used as a proof of concept Apache Kafka charm"
+authors = ["Marc Oppenheimer <marcaoppenheimer@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-kafka-python = "^2.0.2"
-firebase-admin = "^6.0.1"
-cryptography = "^38.0.1"
 ops = "^1.5.3"
+kafka-python = "^2.0.2"
+requests = "^2.28.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"
+isort = "^5.10.1"
+tox = "^3.27.1"
 pytest = "^7.2.0"
-tox = "^3.27.0"
 
 [build-system]
 requires = ["poetry-core"]
