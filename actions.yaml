@@ -1,2 +1,2 @@
 get-data:
-  description: Returns the topic name, username, password, consumer-group-prefix and bootstrap-server created for the charm
+  description: Returns the topic name, username, password, consumer-group-prefix, bootstrap-server and security-protocol created for the charm

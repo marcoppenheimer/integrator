@@ -42,7 +42,12 @@ class IntegratorCharm(CharmBase):
         return self.model.get_relation(REL_NAME)
 
     def _set_data(self, event: RelationEvent) -> None:
-        if not self.unit.is_leader() or not event.relation:
+        if (
+            not self.unit.is_leader()
+            or not event.relation
+            or not event.relation.app
+            or not self.relation
+        ):
             event.defer()
             return
 
@@ -71,6 +76,10 @@ class IntegratorCharm(CharmBase):
         self.unit.status = ActiveStatus()
 
     def _get_data(self, event: ActionEvent) -> None:
+        if not self.relation:
+            event.fail("peer relation not set")
+            return
+
         if not self.kafka_relation:
             event.fail("integrator not related to kafka")
             return
@@ -82,6 +91,7 @@ class IntegratorCharm(CharmBase):
         consumer_group_prefix = self.relation.data[self.app].get(
             "consumer-group-prefix", ""
         )
+        tls = bool(self.relation.data[self.app].get("tls", "").lower() == "true")
 
         if not topic:
             event.fail("Topic not found...")
@@ -95,9 +105,6 @@ class IntegratorCharm(CharmBase):
         if not bootstrap_server:
             event.fail("BootstrapServer not found...")
             return
-        if not consumer_group_prefix:
-            event.fail("ConsumerGroupPrefix not found...")
-            return
 
         event.set_results(
             {
@@ -106,6 +113,7 @@ class IntegratorCharm(CharmBase):
                 "bootstrap-server": bootstrap_server,
                 "consumer-group-prefix": consumer_group_prefix,
                 "topic": TOPIC,
+                "security-protocol": "SASL_SSL" if tls else "SASL_PLAINTEXT",
             }
         )
         return

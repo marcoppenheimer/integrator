@@ -76,6 +76,7 @@ results:
   password: QxMg41nvfEtvcJkYqI51GVGCnwsf8nmQ
   topic: demo
   username: relation-11
+  security-protocol: SASL_PLAINTEXT
 status: completed
 ```
 
