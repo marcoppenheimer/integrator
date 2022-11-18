@@ -75,7 +75,7 @@ class KafkaClient:
         )
 
         for message in consumer:
-            logger.info(message.decode("utf-8"))
+            logger.info(str(message))
 
     def run_producer(self) -> KafkaProducer:
         producer = KafkaProducer(

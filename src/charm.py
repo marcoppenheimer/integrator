@@ -58,6 +58,7 @@ class IntegratorCharm(CharmBase):
         consumer_group_prefix = event.relation.data[event.relation.app].get(
             "consumer-group-prefix", ""
         )
+        tls = event.relation.data[event.relation.app].get("tls", "")
 
         event.relation.data[self.app].update(
             {"extra-user-roles": "admin,consumer,producer", "topic": TOPIC}
@@ -70,6 +71,7 @@ class IntegratorCharm(CharmBase):
                 "bootstrap-server": bootstrap_server,
                 "consumer-group-prefix": consumer_group_prefix,
                 "topic": TOPIC,
+                "tls": tls,
             }
         )
 
