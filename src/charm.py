@@ -91,7 +91,7 @@ class IntegratorCharm(CharmBase):
         consumer_group_prefix = self.relation.data[self.app].get(
             "consumer-group-prefix", ""
         )
-        tls = bool(self.relation.data[self.app].get("tls", "").lower() == "true")
+        tls = bool(self.relation.data[self.app].get("tls", "").lower() == "enabled")
 
         if not topic:
             event.fail("Topic not found...")
