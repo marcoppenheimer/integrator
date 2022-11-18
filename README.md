@@ -32,12 +32,9 @@ charmcraft login
 Ensure you have KafkaK8s and ZooKeeperK8s charms installed:
 
 ```bash
-juju deploy zookeeper-k8s --channel edge --revision 16 -n 3
-juju deploy kafka-k8s --channel edge --revision 13 -n 3
-
-# after both applications mark as `waiting`|`active` and `idle` 
-
-juju relate zookeeper-k8s kafka-k8s
+juju deploy kafka-k8s-bundle --channel edge
+# ensure all applications are marked as `active|idle`
+# if not, run `juju scale-application <APPLICATION> 4` to wake up the stalled app
 ```
 
 Ensure you have built and deployed a local integrator charm:
@@ -71,12 +68,30 @@ juju show-action-output 2
 UnitId: integrator/0
 id: "14"
 results:
-  bootstrap-server: kafka-k8s-1.kafka-k8s-endpoints:9092,kafka-k8s-0.kafka-k8s-endpoints:9092,kafka-k8s-2.kafka-k8s-endpoints:9092
+  bootstrap-server: kafka-k8s-1.kafka-k8s-endpoints:9093,kafka-k8s-0.kafka-k8s-endpoints:9093,kafka-k8s-2.kafka-k8s-endpoints:9093
   consumer-group-prefix: relation-11-
   password: QxMg41nvfEtvcJkYqI51GVGCnwsf8nmQ
   topic: demo
   username: relation-11
-  security-protocol: SASL_PLAINTEXT
+  security-protocol: SASL_SSL
 status: completed
 ```
 
+### Running Producer
+There are multiple ways to get a producer running locally. Currently the Kafka K8s charm can only resolve internal K8s DNS (i.e `pod.statefulset-endpoints:port`), so the `utils/client.py` script requires running in a container.
+
+In order to successfully run `client.py`, you will need:
+
+- Python3.8+
+    - `requests`
+    - `kafka-python`
+- Valid `cert.pem` + `ca.pem`
+    - These can be copied and pasted from any active `kafka-k8s` unit, found in `/data/kafka/config/server.pem` and `/data/kafka/config/ca.pem` respectively
+- Directory structure as follows:
+    - `/.`
+        - `client.py`
+        - `certs/`
+            - `ca.pem`
+            - `cert.pem`
+- You can then run something similar to:
+    - `python3 ./client.py -u relation-9 -p UJgTBKVPNcykvLrY8Np9wN09EKysNQ2d -x SASL_SSL -t demo --producer -s kafka-k8s-1.kafka-k8s-endpoints:9093,kafka-k8s-0.kafka-k8s-endpoints:9093,kafka-k8s-2.kafka-k8s-endpoints:9093`
